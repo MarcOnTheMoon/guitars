@@ -1,47 +1,74 @@
 """
-Control for winder device of coils for hexaphonic guitar pickups.
+Control app for a hexaphonic pickup winder.
 
 @author: Marc Hensel
 @contact: http://www.haw-hamburg.de/marc-hensel
 @copyright: 2024
-@version: 2024.07.04
+@version: 2024.07.05
 @license: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 """
 import time
+import threading
 from ArduinoCOM import ArduinoCOM
 from WinderGUI import WinderGUI
 
 class WinderApp():
 
+    # =========================================================================
     # ========== Class constants ==============================================
+    # =========================================================================
 
     # Command chars expected by the Arduino
     _commands = {
         'enableMotor':          'E',
         'disableMotor':         'D',
         'setSpeedRevsPerSec':   'S',
+        'getRevCount':          'C',
+        'resetRevCounter':      'R',
         'sendOk':               '>'
     }
 
+    # =========================================================================
     # ========== Constructor ==================================================
+    # =========================================================================
 
-    def __init__(self, serialCOM = None):
+    def __init__(self, serialCOM=None):
+        """
+        Constructor.
+        
+        The contructor tries to connect to an Arduino using serial COM ports.
+        If connection succeeds, it generates and runs the GUI.
+        
+        Parameters
+        ----------
+        serialCOM : int, optional
+            Serial port Arduino is connected to (e.g., '3' for 'COM3').
+            Tries to connect to ports 0 to 15, if argument is None. (Default: None)
+
+        Returns
+        -------
+        None.
+
+        """
         # Connect to Arduino (will reset Arduino => Runs setup())
-        self._arduino = ArduinoCOM(serialCOM=serialCOM)
+        self.__threadLock = threading.Lock()
+        self.__arduino = ArduinoCOM(serialCOM=serialCOM)
 
         # Create and start GUI
         self.__gui = WinderGUI(parentApp=self)
 
+    # =========================================================================
     # ========== Serial connection ============================================
+    # =========================================================================
 
     def close(self, waitTimeSec=2.0):
         """
-        Requests Arduino to disable stepper motor and closes serial connection.
+        Requests Arduino to stop and disable stepper motor and closes serial connection.
 
         Parameters
         ----------
         waitTimeSec : float
-            Delay before disabling stepper [s] (Default: 2.0)
+            Delay before stopping and disabling stepper [s] (Default: 2.0)
 
         Returns
         -------
@@ -53,7 +80,7 @@ class WinderApp():
         self.setSpeed(revsPerSec=0)
         self.enableMotor(False)
         time.sleep(1.0)             # Wait for Arduino to read buffer
-        self._arduino.close()
+        self.__arduino.close()
 
     # -------------------------------------------------------------------------
 
@@ -72,19 +99,28 @@ class WinderApp():
             Reply send by the Arduino (typically 'ok').
 
         """
-        self._arduino.writeString(command + self._commands['sendOk'])
-        return self._arduino.readLine()
+        self.__threadLock.acquire()
+        self.__arduino.writeString(command + self._commands['sendOk'])
+        reply = self.__arduino.readLine()
+        self.__threadLock.release()
+        return reply
 
+    # =========================================================================
     # ========== Motor control ================================================
+    # =========================================================================
 
     def enableMotor(self, isEnabled):
         """
         Enable or disable stepper motor.
+        
+        If the motor is enabled, current is flowing through it and it actively
+        holds its position. When disabled, one can easily move the motor by
+        hand.
 
         Parameters
         ----------
         isEnabled : boolean
-            Enable stepper if True, else disable steppers.
+            Enable stepper if True, else disable stepper.
 
         Returns
         -------
@@ -106,6 +142,18 @@ class WinderApp():
     # -------------------------------------------------------------------------
     
     def setSpeed(self, revsPerSec):
+        """ Set stepper motor speed.
+        
+        Parameters
+        ----------
+        revsPerSec : int
+            Motor speed [revolutions/sec].
+
+        Returns
+        -------
+        None.
+
+        """
         # Command + value
         print('Set speed [rps]: {}'.format(revsPerSec), end=' ')
         command = self._commands['setSpeedRevsPerSec']
@@ -114,6 +162,38 @@ class WinderApp():
         # Send command and print reply
         reply = self.__sendWithAck(command)
         print('... ' + reply)
+
+    # =========================================================================
+    # ========== Revolution counter ===========================================
+    # =========================================================================
+
+    def getRevCount(self):
+        # Determine command
+        command = self._commands['getRevCount']
+        print('Get rev count:', end=' ')
+
+        # Send command and print reply
+        reply = self.__sendWithAck(command)
+        print('... ' + reply)            
+
+    # -------------------------------------------------------------------------
+
+    def resetRevCounter(self):
+        """
+        Reset the Arduino's step counter.
+        
+        Returns
+        -------
+        None.
+
+        """
+        # Determine command
+        command = self._commands['resetRevCounter']
+        print('Reset counter', end=' ')
+
+        # Send command and print reply
+        reply = self.__sendWithAck(command)
+        print('... ' + reply)            
         
 # -----------------------------------------------------------------------------
 # Main (sample)
