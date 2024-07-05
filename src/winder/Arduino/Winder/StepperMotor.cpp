@@ -26,6 +26,18 @@ StepperMotor::StepperMotor(int enablePin, int dirPin, int pulsePin,int stepsPerR
 }
 
 /*****************************************************************************************************
+ * Getter
+ *****************************************************************************************************/
+
+/**! Get status of driver's enable port.
+ * 
+ * @return True if motor is enabled, else false.
+ */
+bool StepperMotor::getEnabled() {
+  return isEnabled;
+}
+
+/*****************************************************************************************************
  * Setter
  *****************************************************************************************************/
 
@@ -34,6 +46,7 @@ StepperMotor::StepperMotor(int enablePin, int dirPin, int pulsePin,int stepsPerR
  * @param isEnabled [in] Set enable port to HIGH if true, else LOW
  */
 void StepperMotor::setEnabled(bool isEnabled) {
+  this->isEnabled = isEnabled;
   driver.setEnabled(isEnabled);
 }
 
@@ -74,7 +87,7 @@ int StepperMotor::moveSteps(int numberSteps) {
   adaptSpeed();
 
   // Move steps (if speed is not zero)
-  if (speedRevsPerSec > 0.01) {
+  if (speedRevsPerSec > 0.5) {
     unsigned long stepsPerSec = speedRevsPerSec * STEPS_PER_REV;
     unsigned long durationMicros =  1000000 / stepsPerSec;
   
@@ -96,6 +109,6 @@ void StepperMotor::adaptSpeed() {
   if (abs(deltaSpeed) < 0.25) {
     speedRevsPerSec = targetSpeedRevsPerSec;
   } else {
-    speedRevsPerSec += deltaSpeed / 20;
+    speedRevsPerSec += deltaSpeed / 5;
   }
 }

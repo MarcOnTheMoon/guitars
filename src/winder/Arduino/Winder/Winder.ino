@@ -70,7 +70,8 @@ void loop() {
   }
 
   // Move stepper motor
-  stepCount += motor.moveSteps(10);
+  if (motor.getEnabled())
+    stepCount += motor.moveSteps(10);
 }
 
 /*****************************************************************************************************
@@ -98,7 +99,7 @@ void processCommand(char command) {
 
     // Get count of full revolutions the motor has done
     case GET_REV_COUNT:
-      Serial.print((unsigned long)(stepCount / STEPS_PER_REVOLUTION));
+      Serial.println((unsigned long)(stepCount / STEPS_PER_REVOLUTION));
       break;
     case RESET_REV_COUNT:
       stepCount = 0;
@@ -125,21 +126,3 @@ int serialReceiveNextValue(void) {
 
   return (int)serialCom.getNext();
 }
-
-/*****************************************************************************************************
- * Debug and test method
- *****************************************************************************************************/
-
-/**! Do test movements of all three stepper motors.
- */
-void testMovements() {
-  // Run starting unit
-  motor.setEnabled(true);
-  delay(3000);
-  motor.setEnabled(false);
-  delay(1150);
-}
-
-
-
-  

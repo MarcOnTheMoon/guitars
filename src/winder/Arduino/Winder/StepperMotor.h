@@ -18,6 +18,7 @@ class StepperMotor
   /* Attributes */
   private:
     StepperDriver driver;
+    bool isEnabled = false;                 // Is stepper set to "enabled"?
     const int STEPS_PER_REV;                // Number of steps to rotate by 360°
     double speedRevsPerSec = 0.0;           // Current speed in revolutions per second [rps]
     double targetSpeedRevsPerSec = 0.0;     // Target speed in revolutions per second [rps]
@@ -25,6 +26,7 @@ class StepperMotor
   /* Public methods */
   public:
     StepperMotor(int enablePin, int dirPin, int pulsePin, int stepsPerRevolution);
+    bool getEnabled();
     void setEnabled(bool isEnabled);
     void setDirection(MotorDirection dir);
     void setTargetSpeed(double targetRevsPerSec);

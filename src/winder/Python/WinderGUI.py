@@ -4,11 +4,12 @@ GUI of the control app for a hexaphonic pickup winder.
 @author: Marc Hensel
 @contact: http://www.haw-hamburg.de/marc-hensel
 @copyright: 2024
-@version: 2024.07.04
+@version: 2024.07.05
 @license: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 """
 import tkinter as tk
 import webbrowser
+import threading
 from PIL import ImageTk, Image
 
 class WinderGUI():
@@ -37,7 +38,6 @@ class WinderGUI():
         # GUI root frame and variables
         root = tk.Tk()
         root.title('Pickup Winder')
-        self.__counter = 0                          # Count full rotations
         self.__enableValue = tk.BooleanVar()       # State of the checkbox "Stepper motor enabled"
 
         # Create left (counter, stepper, and info) and right (speed control) GUI frames
@@ -52,7 +52,7 @@ class WinderGUI():
         leftFrame.pack(side='left', anchor='n', padx=5, pady=5)
         rightFrame.pack(side='left', padx=5, pady=5)
         root.mainloop()
-        
+                
     # -------------------------------------------------------------------------
     
     def __addCounterFrame(self, parent, padding):
@@ -171,13 +171,38 @@ class WinderGUI():
 
         """
         frame = tk.LabelFrame(parent, text='Speed [rps]', padx=padding, pady=padding)
-        speedScale = tk.Scale(frame, width=100, length=400, from_=50, to=0, resolution=1, tickinterval=10, activebackground='red', command=self.__onSpeed)
+        speedScale = tk.Scale(frame, width=100, length=300, from_=10, to=0, resolution=1, tickinterval=1, activebackground='red', command=self.__onSpeed)
         speedScale.pack()
         return frame
     
     # =========================================================================
     # ========== Callback methods =============================================
     # =========================================================================
+
+    def __onUpdateCounter(self):
+        """ Time callback method to update the counter.
+        
+        Queries the Arduino's counter value and updates the display. If the
+        stepper motor is enabled (i. e., it might be turning), it starts a
+        thread to call this update method again after a specific time period.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.parentApp != None:
+            # Query and update counter
+            count = self.parentApp.getRevCount()
+            self.__counterLabel.config(text = str(count))            
+            
+            # Call update again when stepper is enabled (else it does not move)
+            if self.__enableValue.get() == True:
+                threading.Timer(0.1, self.__onUpdateCounter).start()
+        else:
+            print('Update count (no app connected)')
+
+    # -------------------------------------------------------------------------
 
     def __onResetCounter(self):
         """ Button callback method to reset the counter to 0.
@@ -187,18 +212,20 @@ class WinderGUI():
         None.
 
         """        
-        self.__counter = 0
-        self.__counterLabel.config(text = str(self.__counter))
         if self.parentApp != None:
+            self.__counterLabel.config(text = '0')
             self.parentApp.resetRevCounter()
         else:
             print('Counter reset (no app connected)')
-        
 
     # -------------------------------------------------------------------------
     
     def __onEnableStepper(self):
         """ Checkbox callback method to enable/disable the stepper motor.
+        
+        Starts a thread to frequently query the Arduino's counter and update
+        the counter display. The thread ends automatically when "enable" is
+        set to False.
 
         Returns
         -------
@@ -207,6 +234,7 @@ class WinderGUI():
         """        
         if self.parentApp != None:
             self.parentApp.enableMotor(isEnabled=self.__enableValue.get())
+            threading.Timer(0.25, self.__onUpdateCounter).start()
         else:
             print('Enable stepper: {} (no app connected)'.format(self.__enableValue.get()))
 

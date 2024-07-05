@@ -84,7 +84,7 @@ class WinderApp():
 
     # -------------------------------------------------------------------------
 
-    def __sendWithAck(self, command):
+    def __sendWithReply(self, command, isRequestAck=True):
         """
         Send command to Arduino requesting and waiting for reply.
 
@@ -96,14 +96,17 @@ class WinderApp():
         Returns
         -------
         string
-            Reply send by the Arduino (typically 'ok').
+            Reply send by the Arduino (typically 'ok' when requesting ACK).
 
         """
-        self.__threadLock.acquire()
-        self.__arduino.writeString(command + self._commands['sendOk'])
-        reply = self.__arduino.readLine()
-        self.__threadLock.release()
-        return reply
+        # Send command (and request for acknowledgement)
+        if isRequestAck == True:
+            self.__arduino.writeString(command + self._commands['sendOk'])
+        else:
+            self.__arduino.writeString(command)
+            
+        # Receive and return reply
+        return self.__arduino.readLine()
 
     # =========================================================================
     # ========== Motor control ================================================
@@ -127,6 +130,8 @@ class WinderApp():
         None.
 
         """
+        self.__threadLock.acquire()
+
         # Determine command
         if isEnabled:
             print('Enable motor', end=' ')
@@ -136,8 +141,9 @@ class WinderApp():
             command = self._commands['disableMotor']
 
         # Send command and print reply
-        reply = self.__sendWithAck(command)
+        reply = self.__sendWithReply(command)
         print('... ' + reply)            
+        self.__threadLock.release()
 
     # -------------------------------------------------------------------------
     
@@ -154,27 +160,40 @@ class WinderApp():
         None.
 
         """
+        self.__threadLock.acquire()
+
         # Command + value
         print('Set speed [rps]: {}'.format(revsPerSec), end=' ')
         command = self._commands['setSpeedRevsPerSec']
         command += chr(revsPerSec)
 
         # Send command and print reply
-        reply = self.__sendWithAck(command)
+        reply = self.__sendWithReply(command)
         print('... ' + reply)
+        self.__threadLock.release()
 
     # =========================================================================
     # ========== Revolution counter ===========================================
     # =========================================================================
 
     def getRevCount(self):
-        # Determine command
-        command = self._commands['getRevCount']
-        print('Get rev count:', end=' ')
+        """ Get count of motor full revolutions from Arduino.
 
-        # Send command and print reply
-        reply = self.__sendWithAck(command)
-        print('... ' + reply)            
+        Returns
+        -------
+        int
+            Full revolutions since start or last counter reset.
+
+        """
+        self.__threadLock.acquire()
+
+        # Determine and send command
+        command = self._commands['getRevCount']
+        reply = self.__sendWithReply(command, isRequestAck=False)
+        
+        # Return counter as value
+        self.__threadLock.release()
+        return int(reply)
 
     # -------------------------------------------------------------------------
 
@@ -187,13 +206,16 @@ class WinderApp():
         None.
 
         """
+        self.__threadLock.acquire()
+
         # Determine command
         command = self._commands['resetRevCounter']
         print('Reset counter', end=' ')
 
         # Send command and print reply
-        reply = self.__sendWithAck(command)
+        reply = self.__sendWithReply(command)
         print('... ' + reply)            
+        self.__threadLock.release()
         
 # -----------------------------------------------------------------------------
 # Main (sample)
