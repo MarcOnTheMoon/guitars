@@ -4,7 +4,7 @@ Control app for a hexaphonic pickup winder.
 @author: Marc Hensel
 @contact: http://www.haw-hamburg.de/marc-hensel
 @copyright: 2024
-@version: 2024.07.05
+@version: 2024.07.06
 @license: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 """
 import time
@@ -52,7 +52,7 @@ class WinderApp():
         """
         # Connect to Arduino (will reset Arduino => Runs setup())
         self.__threadLock = threading.Lock()
-        self.__arduino = ArduinoCOM(serialCOM=serialCOM)
+        self.__arduino = ArduinoCOM(serialCOM=serialCOM, baudRate=38_400)
 
         # Create and start GUI
         self.__gui = WinderGUI(parentApp=self)
@@ -178,6 +178,10 @@ class WinderApp():
 
     def getRevCount(self):
         """ Get count of motor full revolutions from Arduino.
+        
+        Warning: Querying the rev count leads to a small pause in turning the
+        stepper motor at the Arduino side. To run the stepper smoothly, do not
+        use the query.
 
         Returns
         -------

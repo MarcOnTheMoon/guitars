@@ -4,7 +4,7 @@ GUI of the control app for a hexaphonic pickup winder.
 @author: Marc Hensel
 @contact: http://www.haw-hamburg.de/marc-hensel
 @copyright: 2024
-@version: 2024.07.05
+@version: 2024.07.06
 @license: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 """
 import tkinter as tk
@@ -198,7 +198,7 @@ class WinderGUI():
             
             # Call update again when stepper is enabled (else it does not move)
             if self.__enableValue.get() == True:
-                threading.Timer(0.1, self.__onUpdateCounter).start()
+                threading.Timer(2.0, self.__onUpdateCounter).start()
         else:
             print('Update count (no app connected)')
 

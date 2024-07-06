@@ -4,7 +4,7 @@
  * Author: Marc Hensel, http://www.haw-hamburg.de/marc-hensel
  * Project: https://github.com/MarcOnTheMoon/hexaphonic_pickup
  * Copyright: 2024, Marc Hensel
- * Version: 2024.07.05
+ * Version: 2024.07.06
  * License: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
  *****************************************************************************************************
  * Board:
@@ -57,7 +57,7 @@ unsigned long stepCount = 0;
  */
 void setup() {
   // USB connection to Python script
-  Serial.begin(9600);       // Make sure baud rate matches Python script
+  Serial.begin(38400);       // Make sure baud rate matches Python script
 }
 
 /* --------------------------------------------------------------------------------------------------*/
@@ -101,6 +101,8 @@ void processCommand(char command) {
     case GET_REV_COUNT:
       Serial.println((unsigned long)(stepCount / STEPS_PER_REVOLUTION));
       break;
+
+    // Reset the counter to 0
     case RESET_REV_COUNT:
       stepCount = 0;
       break;
