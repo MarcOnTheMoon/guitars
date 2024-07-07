@@ -4,7 +4,7 @@
  * Author: Marc Hensel, http://www.haw-hamburg.de/marc-hensel
  * Project: https://github.com/MarcOnTheMoon/hexaphonic_pickup
  * Copyright: 2024, Marc Hensel
- * Version: 2024.07.06
+ * Version: 2024.07.07
  * License: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
  *****************************************************************************************************
  * Board:
@@ -28,12 +28,14 @@
 #define STEPS_PER_REVOLUTION 200  // 360° / (1.8° per step) = 200 steps
 
 // Commands in communication with Python script
-#define ENABLE_STEPPER      'E'   // Set "Enable" of motor driver to hight
-#define DISABLE_STEPPER     'D'   // Set "Enable" of motor driver to low
-#define SET_SPEED_RPS       'S'   // Set motor speed (rotations per second send as next unsigned char)
-#define GET_REV_COUNT       'C'   // Get count of full revolutions the motor has moved
-#define RESET_REV_COUNT     'R'   // Reset counter of full revolutions the motor has moved
-#define SEND_OK             '>'   // Request acqknowledge
+#define ENABLE_STEPPER        'E'   // Set "Enable" of motor driver to hight
+#define DISABLE_STEPPER       'e'   // Set "Enable" of motor driver to low
+#define DIR_CLOCKWISE         'D'   // Set "Direction" of motor driver to clockwise
+#define DIR_COUNTER_CLOCKWISE 'd'   // Set "Direction" of motor driver to counter-clockwise
+#define SET_SPEED_RPS         'S'   // Set motor speed (rotations per second send as next unsigned char)
+#define GET_REV_COUNT         'C'   // Get count of full revolutions the motor has moved
+#define RESET_REV_COUNT       'R'   // Reset counter of full revolutions the motor has moved
+#define SEND_OK               '>'   // Request acqknowledge
 
 /*****************************************************************************************************
  * Global variables
@@ -84,6 +86,14 @@ void loop() {
  */
 void processCommand(char command) {
   switch (command) {
+    // Get or restet count of full revolutions the motor has done
+    case GET_REV_COUNT:
+      Serial.println((unsigned long)(stepCount / STEPS_PER_REVOLUTION));
+      break;
+    case RESET_REV_COUNT:
+      stepCount = 0;
+      break;
+
     // Set enabled pin of stepper driver
     case ENABLE_STEPPER:
       motor.setEnabled(true);
@@ -91,20 +101,18 @@ void processCommand(char command) {
     case DISABLE_STEPPER:
       motor.setEnabled(false);
       break;
+
+    // Set stepper turning direction
+    case DIR_CLOCKWISE:
+      motor.setDirection(MotorDirection::CLOCKWISE);
+      break;
+    case DIR_COUNTER_CLOCKWISE:
+      motor.setDirection(MotorDirection::COUNTER_CLOCKWISE);
+      break;
       
     // Set stepper motor speed
     case SET_SPEED_RPS:
       motor.setTargetSpeed(serialReceiveNextValue());
-      break;
-
-    // Get count of full revolutions the motor has done
-    case GET_REV_COUNT:
-      Serial.println((unsigned long)(stepCount / STEPS_PER_REVOLUTION));
-      break;
-
-    // Reset the counter to 0
-    case RESET_REV_COUNT:
-      stepCount = 0;
       break;
 
     // Send acqknowledge

@@ -4,7 +4,7 @@ Control app for a hexaphonic pickup winder.
 @author: Marc Hensel
 @contact: http://www.haw-hamburg.de/marc-hensel
 @copyright: 2024
-@version: 2024.07.06
+@version: 2024.07.07
 @license: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 """
 import time
@@ -20,8 +20,10 @@ class WinderApp():
 
     # Command chars expected by the Arduino
     _commands = {
-        'enableMotor':          'E',
-        'disableMotor':         'D',
+        'enableMotor':          'E',    # 'Enable' signal high
+        'disableMotor':         'e',    # 'Enable' signal low
+        'dirClockwise':         'D',    # Direction clockwise
+        'dirCounterClockwise':  'd',    # Direction counter-clockwise
         'setSpeedRevsPerSec':   'S',
         'getRevCount':          'C',
         'resetRevCounter':      'R',
@@ -139,6 +141,37 @@ class WinderApp():
         else:
             print('Disable motor', end=' ')
             command = self._commands['disableMotor']
+
+        # Send command and print reply
+        reply = self.__sendWithReply(command)
+        print('... ' + reply)            
+        self.__threadLock.release()
+
+    # -------------------------------------------------------------------------
+
+    def setDirection(self, isClockwise):
+        """
+        Set the turning direction of the stepper motor.
+
+        Parameters
+        ----------
+        isClockwise : boolean
+            Turn steppr clockwise if True, else counter-clockwise.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.__threadLock.acquire()
+
+        # Determine command
+        if isClockwise:
+            print('Turn clockwise', end=' ')
+            command = self._commands['dirClockwise']
+        else:
+            print('Turn counter-clockwise', end=' ')
+            command = self._commands['dirCounterClockwise']
 
         # Send command and print reply
         reply = self.__sendWithReply(command)

@@ -4,7 +4,7 @@ GUI of the control app for a hexaphonic pickup winder.
 @author: Marc Hensel
 @contact: http://www.haw-hamburg.de/marc-hensel
 @copyright: 2024
-@version: 2024.07.06
+@version: 2024.07.07
 @license: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 """
 import tkinter as tk
@@ -38,7 +38,8 @@ class WinderGUI():
         # GUI root frame and variables
         root = tk.Tk()
         root.title('Pickup Winder')
-        self.__enableValue = tk.BooleanVar()       # State of the checkbox "Stepper motor enabled"
+        self.__bg_color =  root.cget('bg')
+        self.__isCounterClockwiseValue = tk.BooleanVar()       # State of the checkbox "Rotate counter-clockwise"
 
         # Create left (counter, stepper, and info) and right (speed control) GUI frames
         leftFrame = tk.Frame(root)
@@ -74,7 +75,7 @@ class WinderGUI():
         # Create widgets
         frame = tk.LabelFrame(parent, text='Counter', padx=padding, pady=padding)
         self.__counterLabel = tk.Label(frame, text='0', width=5, height=1, background='black', foreground='white', font=('Arial', '53'))
-        resetButton = tk.Button(frame, text='Reset', width=10, command=self.__onResetCounter)
+        resetButton = tk.Button(frame, text='Reset', width=15, command=self.__onResetCounter)
         
         # Layout widgets
         self.__counterLabel.pack()
@@ -85,7 +86,7 @@ class WinderGUI():
     
     def __addStepperMotorFrame(self, parent, padding):
         """
-        Add a frame containing a stepper motor section to enable/disable the motor.
+        Add a frame containing a stepper motor section to set the turning direction of the motor.
 
         Parameters
         ----------
@@ -100,8 +101,8 @@ class WinderGUI():
 
         """
         frame = tk.LabelFrame(parent, text='Stepper motor', padx=padding, pady=padding)
-        self.__enableCheckbox = tk.Checkbutton(frame, text='Enable', variable=self.__enableValue, command=self.__onEnableStepper)
-        self.__enableCheckbox.pack(anchor='w')
+        self.__directionCheckbox = tk.Checkbutton(frame, text='Rotate counter-clockwise', variable=self.__isCounterClockwiseValue, command=self.__onSetStepperDirection)
+        self.__directionCheckbox.pack(anchor='w')
         frame.pack(side='top', anchor='w', fill='x')
         
     # -------------------------------------------------------------------------
@@ -156,7 +157,7 @@ class WinderGUI():
     
     def __createRightFrame(self, parent, padding):
         """
-        Create a frame containing a slider to set the stepper motor speed.
+        Create a frame containing a slider to set the stepper motor speed and start/stop button.
 
         Parameters
         ----------
@@ -171,8 +172,10 @@ class WinderGUI():
 
         """
         frame = tk.LabelFrame(parent, text='Speed [rps]', padx=padding, pady=padding)
-        speedScale = tk.Scale(frame, width=100, length=300, from_=10, to=0, resolution=1, tickinterval=1, activebackground='red', command=self.__onSpeed)
+        speedScale = tk.Scale(frame, width=100, length=280, from_=8, to=0, resolution=1, tickinterval=1, activebackground='red', command=self.__onSpeed)
+        self.__startStopButton= tk.Button(frame, text='Start', height=2, activebackground='red', command=self.__onStartStop)
         speedScale.pack()
+        self.__startStopButton.pack(fill='x')
         return frame
     
     # =========================================================================
@@ -197,7 +200,8 @@ class WinderGUI():
             self.__counterLabel.config(text = str(count))            
             
             # Call update again when stepper is enabled (else it does not move)
-            if self.__enableValue.get() == True:
+            isEnabled = (self.__startStopButton.cget('text') == 'Stop')
+            if isEnabled == True:
                 threading.Timer(2.0, self.__onUpdateCounter).start()
         else:
             print('Update count (no app connected)')
@@ -220,8 +224,24 @@ class WinderGUI():
 
     # -------------------------------------------------------------------------
     
-    def __onEnableStepper(self):
-        """ Checkbox callback method to enable/disable the stepper motor.
+    def __onSetStepperDirection(self):
+        """ Checkbox callback method to set the stepper motor's direction of rotation.
+
+        Returns
+        -------
+        None.
+
+        """        
+        if self.parentApp != None:
+            isClockwise = (self.__isCounterClockwiseValue.get() == False)
+            self.parentApp.setDirection(isClockwise=isClockwise)
+        else:
+            print('Rotate counter-clockwise: {} (no app connected)'.format(self.__isCounterClockwiseValue.get()))
+
+    # -------------------------------------------------------------------------
+    
+    def __onStartStop(self):
+        """ Button callback method to start/stop (i.e., enable/disable) the stepper motor.
         
         Starts a thread to frequently query the Arduino's counter and update
         the counter display. The thread ends automatically when "enable" is
@@ -232,11 +252,19 @@ class WinderGUI():
         None.
 
         """        
+        # Toggle button text (start/stop)
+        isStart = (self.__startStopButton.cget('text') == 'Start')
+        if isStart == True:
+            self.__startStopButton.config(text='Stop', bg='red')
+        else:
+            self.__startStopButton.config(text='Start', bg=self.__bg_color)
+
+        # Start or stop the stepper motor        
         if self.parentApp != None:
-            self.parentApp.enableMotor(isEnabled=self.__enableValue.get())
+            self.parentApp.enableMotor(isEnabled=isStart)
             threading.Timer(0.25, self.__onUpdateCounter).start()
         else:
-            print('Enable stepper: {} (no app connected)'.format(self.__enableValue.get()))
+            print('Enable stepper: {} (no app connected)'.format(isStart))
 
     # -------------------------------------------------------------------------
     
