@@ -126,6 +126,8 @@ class ArduinoCOM():
                 return str(data, 'utf-8').rstrip('\n')
         return None
 
+    # ----------------------------------------------------------------------
+
     def writeString(self, data):
         """
         Send string data to a connected Arduino.

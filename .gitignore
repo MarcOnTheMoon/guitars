@@ -5,6 +5,9 @@
 *.FCStd
 *.FCStd1
 
+# Ignore PCB CAD files
+kicad
+
 # Ignore Word files
 *.docx
 
