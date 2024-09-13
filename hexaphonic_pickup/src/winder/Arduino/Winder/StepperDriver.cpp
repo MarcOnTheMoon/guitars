@@ -2,9 +2,9 @@
  * Control stepper motor driver (such as TB6600)
  *****************************************************************************************************
  * Author: Marc Hensel, http://www.haw-hamburg.de/marc-hensel
- * Project: https://github.com/MarcOnTheMoon/hexaphonic_pickup
+ * Project: https://github.com/MarcOnTheMoon/guitars
  * Copyright: 2024, Marc Hensel
- * Version: 2024.07.05
+ * Version: 2024.09.13
  * License: CC BY-NC-SA 4.0, see https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
  *****************************************************************************************************/
 
@@ -23,13 +23,13 @@
  */
 StepperDriver::StepperDriver(int enablePin, int dirPin, int pulsePin) : ENABLE_PIN(enablePin), DIR_PIN(dirPin), PULSE_PIN(pulsePin) {
   // Direction and pulse
-	pinMode(DIR_PIN, OUTPUT);
-	pinMode(PULSE_PIN, OUTPUT);
+  pinMode(DIR_PIN, OUTPUT);
+  pinMode(PULSE_PIN, OUTPUT);
   setDirection(MotorDirection::CLOCKWISE);
-	digitalWrite(PULSE_PIN, LOW);
+  digitalWrite(PULSE_PIN, LOW);
 
   // Enable (initially disabled)
-	pinMode(ENABLE_PIN, OUTPUT);
+  pinMode(ENABLE_PIN, OUTPUT);
   setEnabled(false);
 }
 
@@ -58,7 +58,7 @@ void StepperDriver::setEnabled(bool isEnabled) {
  * @param dir [in] Set rotation to CLOCKWISE or COUNTER_CLOCKWISE
  */
 void StepperDriver::setDirection(MotorDirection dir) {
-	digitalWrite(DIR_PIN, (dir == MotorDirection::CLOCKWISE) ? HIGH : LOW);
+  digitalWrite(DIR_PIN, (dir == MotorDirection::CLOCKWISE) ? HIGH : LOW);
 }
 
 /*****************************************************************************************************
