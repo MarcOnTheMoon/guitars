@@ -1,7 +1,7 @@
 # Hexaphonic Guitar and Signal Analysis
 
 > [!IMPORTANT]
-> This respository is __work-in-progress__ of student theses.<br>
+> This repository is __work-in-progress__ of student theses.<br>
 > It is subject to change, __not__ a reviewed publication of final results.
 
 ## What's it about?
@@ -36,7 +36,7 @@ In a first Master thesis, Fiona Vogel managed to record samples with her own hex
 
 - [X] _Hardware_: design of a hexaphonic pickup (including coil winding machine, 3D prints, and PCB)
 - [X] _Signal chain_: simple chain from hexaphonic guitar to signal analysis in a laptop
-- [X] _Pitch detection_: proof of concept for MIDI convertion of guitar signals
+- [X] _Pitch detection_: proof of concept for MIDI conversion of guitar signals
 
 ## Next steps
 <img src="./assets/images/AriaCat.jpg" width="250" align="left">
