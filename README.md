@@ -43,7 +43,7 @@ In a first Master thesis, Fiona Vogel managed to record samples with her own hex
 
 With our own hexaphonic pickups available, we have a good foundation for lots and lots of ideas to work on in detail. The next step is to finalize two pickups and mount these in our guitars. Future student topics include, in particular, audio signal analysis using neural networks and signal processing methods, transcription to tab notation, MIDI guitar, and live playing with low latency.
 
-In case you are interested, I have a simple guitar from university available for my students and a private guitar for myself. I wouldn't replace any pickup of my beloved Fender Telecaster, however, I have completely renovated my old Aria Pro II Cat Series that I played in my prior life as musician. I have removed the varnish by hand (think twice before you do that!), applied transparent varnish, replace all electric components, replaced the pickguard by own 3D-printed parts, and such. Most important, I have freed up the Humbucker slot at the bridge, which gives me plenty of space for our custom pickups.
+In case you are interested, I have a simple guitar from university available for my students and a private guitar for myself. I wouldn't replace any pickup of my beloved Fender Telecaster, however, I have completely renovated my old Aria Pro II Cat Series that I played in my prior life as musician. I have removed the varnish by hand (think twice before you do that!), applied transparent varnish, replaced all electric components, replaced the pickguard by own 3D-printed parts, and such. Most important, I have freed up the Humbucker slot at the bridge, which gives me plenty of space for our custom pickups.
 <br clear=all>
 
 ## Uploaded material
